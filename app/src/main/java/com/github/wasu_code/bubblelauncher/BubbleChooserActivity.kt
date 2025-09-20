@@ -1,5 +1,6 @@
 package com.github.wasu_code.bubblelauncher
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
@@ -10,12 +11,14 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.wasu_code.bubblelauncher.data.AppDatabase
 import com.github.wasu_code.bubblelauncher.data.AppEntity
+import com.github.wasu_code.bubblelauncher.util.BubbleHelper
 import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.launch
 
 class BubbleChooserActivity : AppCompatActivity() {
     private lateinit var recycler: RecyclerView
     private lateinit var adapter: AppAdapter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         supportActionBar?.hide()  // Hide default AppCompat ActionBar
@@ -26,12 +29,24 @@ class BubbleChooserActivity : AppCompatActivity() {
         adapter = AppAdapter(this::onAppClicked, this::onAppLongPressed)
         recycler.adapter = adapter
 
-        findViewById<MaterialToolbar>(R.id.topAppBar).setOnClickListener {
+        val topAppBar = findViewById<MaterialToolbar>(R.id.topAppBar)
+        topAppBar.inflateMenu(R.menu.top_app_bar_menu)
+        topAppBar.setOnClickListener {
             // trigger rescan
             val wr =
                 androidx.work.OneTimeWorkRequestBuilder<AppScanWorker>().build()
             androidx.work.WorkManager.getInstance(this).enqueue(wr)
         }
+        topAppBar.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_add_bubble -> {
+                    openNewBubble()
+                    true
+                }
+                else -> false
+            }
+        }
+
         lifecycleScope.launch {
             AppDatabase.get(applicationContext)
                 .appDao()
@@ -40,6 +55,12 @@ class BubbleChooserActivity : AppCompatActivity() {
                     adapter.submitList(list)
                 }
         }
+    }
+
+    private fun openNewBubble() {
+        val intent = Intent(this, BubbleChooserActivity::class.java)
+        @SuppressLint("MissingPermission")
+        BubbleHelper.postBubble(this, intent, "New Bubble")
     }
 
     private fun onAppClicked(app: AppEntity) {
