@@ -62,7 +62,7 @@ class BubbleChooserActivity : AppCompatActivity() {
             when (item.title) {
                 "Open in split-screen" -> {
                     val target = Intent().apply {
-                        setClassName(app.packageName, app.activityName);
+                        setClassName(app.packageName, app.activityName)
                         addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT or
                                 Intent.FLAG_ACTIVITY_NEW_TASK) }
                     startActivity(target)
@@ -70,7 +70,7 @@ class BubbleChooserActivity : AppCompatActivity() {
                 }
                 "Open as new task (floating if supported)" -> {
                     val target = Intent().apply {
-                        setClassName(app.packageName, app.activityName);
+                        setClassName(app.packageName, app.activityName)
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
                     // Many devices ignore floating requests; this is a besteffort.
                     startActivity(target)
