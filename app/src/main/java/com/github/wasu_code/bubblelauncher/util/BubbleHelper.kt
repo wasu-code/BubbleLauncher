@@ -8,80 +8,87 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.app.Person
+import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.graphics.drawable.Icon
 import androidx.annotation.RequiresPermission
 import java.util.UUID
 
 const val CHANNEL_ID = "bubble_channel"
-const val NOTIF_ID_BUBBLE = 1001
+const val MAX_DYNAMIC_SHORTCUTS = 5
 
 object BubbleHelper {
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun postBubble(context: Context, bubbleActivityIntent: Intent, title: String) {
-
-        // Ensure the bubble intent has an action
+        // Ensure bubble intent has an action
         if (bubbleActivityIntent.action == null) {
-            bubbleActivityIntent.action = "com.github.wasu_code.bubblelauncher.OPEN_BUBBLE"
+            bubbleActivityIntent.action = "com.github.wasu_code.bubblelauncher.OPEN_BUBBLE_${UUID.randomUUID()}"
         }
         bubbleActivityIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
 
+        // Unique PendingIntent
         val pending = PendingIntent.getActivity(
             context,
-            0,
+            UUID.randomUUID().hashCode(),
             bubbleActivityIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val shortcutId = "bubble_${UUID.randomUUID()}"
+        // Shortcut management
         val sm = context.getSystemService(ShortcutManager::class.java)
-        val shortcut = android.content.pm.ShortcutInfo.Builder(context, shortcutId)
+        val shortcutId = "bubble_${UUID.randomUUID()}"
+        val shortcut = ShortcutInfo.Builder(context, shortcutId)
             .setShortLabel("Bubble")
-            .setLongLived(true) // internal bubble association
-            .setIntent(Intent(Intent.ACTION_DEFAULT)) // dummy intent
+            .setLongLived(true)
+            .setIntent(Intent(Intent.ACTION_DEFAULT))
             .build()
-        sm?.removeAllDynamicShortcuts()
-        sm?.addDynamicShortcuts(listOf(shortcut))
 
+        sm?.let {
+            // Remove dynamic shortcuts whose notifications no longer exist
+            cleanupObsoleteShortcuts(context, it)
+
+            val current = it.dynamicShortcuts.toMutableList()
+            if (current.size >= MAX_DYNAMIC_SHORTCUTS) {
+                val toRemove = current.take(current.size - MAX_DYNAMIC_SHORTCUTS + 1).map { s -> s.id }
+                it.removeDynamicShortcuts(toRemove)
+            }
+            it.addDynamicShortcuts(listOf(shortcut))
+        }
+
+        // Bubble metadata
         val bubbleMetadata = Notification.BubbleMetadata.Builder(
             pending,
             Icon.createWithResource(context, com.github.wasu_code.bubblelauncher.R.drawable.ic_launcher_foreground)
         )
             .setDesiredHeight(800)
-            .setAutoExpandBubble(true) // Recommended for conversation-style
-            .setSuppressNotification(true) // Prevent duplicate notification if desired
+            .setAutoExpandBubble(true)
+            .setSuppressNotification(false)
             .build()
 
-        // Dummy "self" person
-        val me = Person.Builder()
-            .setName("Me")
-            .setImportant(true)
-            .build()
-
-        // Dummy partner person
-        val partner = Person.Builder()
-            .setName("Partner")
-            .setImportant(true)
-            .build()
-
-        // MessagingStyle with "self"
+        // Dummy people
+        val me = Person.Builder().setName("Me").setImportant(true).build()
+        val partner = Person.Builder().setName("Partner").setImportant(true).build()
         val messagingStyle = Notification.MessagingStyle(me)
             .addMessage("Bubble active", System.currentTimeMillis(), partner)
             .setGroupConversation(false)
 
+        // Unique notification ID
+        val notifId = (System.currentTimeMillis() % Int.MAX_VALUE).toInt()
 
+        // Build notification
         val notif = Notification.Builder(context, CHANNEL_ID)
             .setContentTitle(title)
             .setSmallIcon(com.github.wasu_code.bubblelauncher.R.drawable.ic_launcher_foreground)
             .setBubbleMetadata(bubbleMetadata)
             .setShortcutId(shortcutId)
             .setStyle(messagingStyle)
-            .setOngoing(true) // required for bubble
+            .setOngoing(false)       // not ongoing so user can swipe
+            .setAutoCancel(true)     // auto remove when user dismisses
             .build()
 
         val nm = context.getSystemService(NotificationManager::class.java)
-        nm.notify(NOTIF_ID_BUBBLE, notif)
+        nm.notify(notifId, notif)
     }
 
     fun createBubbleChannel(context: Context) {
@@ -95,4 +102,18 @@ object BubbleHelper {
         val nm = context.getSystemService(NotificationManager::class.java)
         nm.createNotificationChannel(channel)
     }
+
+    /**
+     * Remove dynamic shortcuts whose notifications no longer exist.
+     */
+    private fun cleanupObsoleteShortcuts(context: Context, sm: ShortcutManager) {
+        val nm = context.getSystemService(NotificationManager::class.java)
+        val activeIds: Set<String> = nm.activeNotifications
+            .mapNotNull { sbn -> sbn.notification.shortcutId }
+            .toSet()
+
+        val obsolete = sm.dynamicShortcuts.map { it.id }.filter { it !in activeIds }
+        if (obsolete.isNotEmpty()) sm.removeDynamicShortcuts(obsolete)
+    }
+
 }
