@@ -24,7 +24,7 @@ class BubbleChooserActivity : AppCompatActivity() {
         adapter = AppAdapter(this::onAppClicked, this::onAppLongPressed)
         recycler.adapter = adapter
         findViewById<Button>(R.id.btnRescan).setOnClickListener {
-// trigger rescan
+            // trigger rescan
             val wr =
                 androidx.work.OneTimeWorkRequestBuilder<AppScanWorker>().build()
             androidx.work.WorkManager.getInstance(this).enqueue(wr)

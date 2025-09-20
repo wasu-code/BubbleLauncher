@@ -11,7 +11,7 @@ class QuickTileService : TileService() {
     override fun onClick() {
         super.onClick()
 
-// Create intent for BubbleChooserActivity and post bubble
+        // Create intent for BubbleChooserActivity and post bubble
         BubbleHelper.createBubbleChannel(this)
         val intent = Intent(this, BubbleChooserActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

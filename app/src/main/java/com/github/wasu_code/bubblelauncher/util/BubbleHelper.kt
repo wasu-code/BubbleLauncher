@@ -41,6 +41,7 @@ object BubbleHelper {
             .setLongLived(true) // internal bubble association
             .setIntent(Intent(Intent.ACTION_DEFAULT)) // dummy intent
             .build()
+        sm?.removeAllDynamicShortcuts()
         sm?.addDynamicShortcuts(listOf(shortcut))
 
         val bubbleMetadata = Notification.BubbleMetadata.Builder(
