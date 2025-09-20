@@ -20,24 +20,28 @@ class BubbleChooserActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         supportActionBar?.hide()  // Hide default AppCompat ActionBar
         setContentView(R.layout.activity_bubble_chooser)
+
         recycler = findViewById(R.id.recycler)
         recycler.layoutManager = GridLayoutManager(this, 4)
         adapter = AppAdapter(this::onAppClicked, this::onAppLongPressed)
         recycler.adapter = adapter
+
         findViewById<MaterialToolbar>(R.id.topAppBar).setOnClickListener {
             // trigger rescan
             val wr =
                 androidx.work.OneTimeWorkRequestBuilder<AppScanWorker>().build()
             androidx.work.WorkManager.getInstance(this).enqueue(wr)
         }
-        loadCached()
-    }
-    private fun loadCached() {
         lifecycleScope.launch {
-            val list = AppDatabase.get(applicationContext).appDao().getAll()
-            adapter.submitList(list)
+            AppDatabase.get(applicationContext)
+                .appDao()
+                .getAllFlow()
+                .collect { list ->
+                    adapter.submitList(list)
+                }
         }
     }
+
     private fun onAppClicked(app: AppEntity) {
         // Forward original intent if present
         val original = intent
