@@ -33,31 +33,31 @@
         </activity>
 
         <!-- Proxy activity: receives SHARE and VIEW intents -->
-        <activity
-            android:name=".ProxyActivity"
-            android:allowEmbedded="true"
-            android:resizeableActivity="true"
-            android:documentLaunchMode="always"
-            android:exported="true">
+<!--        <activity-->
+<!--            android:name=".ProxyActivity"-->
+<!--            android:allowEmbedded="true"-->
+<!--            android:resizeableActivity="true"-->
+<!--            android:documentLaunchMode="always"-->
+<!--            android:exported="true">-->
 
 
-            <!-- Share (SEND) -->
-            <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="*/*" />
-            </intent-filter>
+<!--            &lt;!&ndash; Share (SEND) &ndash;&gt;-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.SEND" />-->
+<!--                <category android:name="android.intent.category.DEFAULT" />-->
+<!--                <data android:mimeType="*/*" />-->
+<!--            </intent-filter>-->
 
 
-            <!-- View (deep links / open with) -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-            </intent-filter>
-        </activity>
+<!--            &lt;!&ndash; View (deep links / open with) &ndash;&gt;-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.VIEW" />-->
+<!--                <category android:name="android.intent.category.DEFAULT" />-->
+<!--                <category android:name="android.intent.category.BROWSABLE" />-->
+<!--                <data android:scheme="http" />-->
+<!--                <data android:scheme="https" />-->
+<!--            </intent-filter>-->
+<!--        </activity>-->
 
 
         <!-- Bubble chooser activity (this will be the one in bubble) -->

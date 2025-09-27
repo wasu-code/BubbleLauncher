@@ -75,31 +75,56 @@ class BubbleChooserActivity : AppCompatActivity() {
         startActivity(target)
     }
     private fun onAppLongPressed(view: View, app: AppEntity) {
-        // simple context menu
-        val popup = android.widget.PopupMenu(this, view)
-        popup.menu.add("Open in split-screen")
-        popup.menu.add("Open as new task (floating if supported)")
-        popup.setOnMenuItemClickListener { item: MenuItem ->
-            when (item.title) {
-                "Open in split-screen" -> {
-                    val target = Intent().apply {
-                        setClassName(app.packageName, app.activityName)
-                        addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT or
-                                Intent.FLAG_ACTIVITY_NEW_TASK) }
-                    startActivity(target)
-                    true
-                }
-                "Open as new task (floating if supported)" -> {
-                    val target = Intent().apply {
-                        setClassName(app.packageName, app.activityName)
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
-                    // Many devices ignore floating requests; this is a besteffort.
-                    startActivity(target)
-                    true
-                }
-                else -> false
-            }
-        }
-        popup.show()
+        //TODO see https://github.com/farmerbb/Taskbar
+//        val popup = android.widget.PopupMenu(this, view)
+//        popup.menu.add("Open in split-screen")
+//        popup.menu.add("Open in freeform / floating")
+//        popup.menu.add("Open as new task")
+//
+//        popup.setOnMenuItemClickListener { item: MenuItem ->
+//            when (item.title) {
+//
+//                "Open in split-screen" -> {
+//                    val intent = Intent().apply {
+//                        setClassName(app.packageName, app.activityName)
+//                        addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT)
+//                    }
+//                    startActivity(intent)
+//                    true
+//                }
+//
+//                "Open in freeform / floating" -> {
+//                    val intent = Intent().apply {
+//                        setClassName(app.packageName, app.activityName)
+//                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+//                    }
+//
+//                    // Use ActivityOptions to request freeform window (floating) if device supports
+//                    val options =
+//                        android.app.ActivityOptions.makeBasic().apply {
+//                            launchBounds = android.graphics.Rect(100, 100, 800, 800)
+//                        }
+//
+//                    if (options != null) startActivity(intent, options.toBundle())
+//                    else startActivity(intent)
+//
+//                    true
+//                }
+//
+//                "Open as new task" -> {
+//                    val intent = Intent().apply {
+//                        setClassName(app.packageName, app.activityName)
+//                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+//                    }
+//                    startActivity(intent)
+//                    true
+//                }
+//
+//                else -> false
+//            }
+//        }
+//
+//        popup.show()
     }
+
 }
