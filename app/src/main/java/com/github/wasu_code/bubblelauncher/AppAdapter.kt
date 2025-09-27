@@ -23,15 +23,37 @@ class AppAdapter(
             AppEntity) = oldItem == newItem
         }
     }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
         val v =
             LayoutInflater.from(parent.context).inflate(R.layout.item_app, parent, false)
         return VH(v)
     }
+
     override fun onBindViewHolder(holder: VH, position: Int) {
         val item = getItem(position)
         holder.bind(item, onClick, onLong)
     }
+
+    private var fullList: List<AppEntity> = emptyList()
+
+    override fun submitList(list: List<AppEntity>?) {
+        super.submitList(list)
+        if (list != null) fullList = list
+    }
+
+    fun filter(query: String) {
+        val filtered = if (query.isBlank()) {
+            fullList
+        } else {
+            fullList.filter {
+                it.label.contains(query, ignoreCase = true) ||
+                        it.packageName.contains(query, ignoreCase = true)
+            }
+        }
+        super.submitList(filtered)
+    }
+
     class VH(view: View) : RecyclerView.ViewHolder(view) {
         private val label: TextView = view.findViewById(R.id.label)
         private val icon: ImageView = view.findViewById(R.id.icon)
@@ -43,7 +65,7 @@ class AppAdapter(
                 val drawable = pm.getApplicationIcon(item.packageName)
                 icon.setImageDrawable(drawable)
             } catch (e: Exception) {
-// ignore
+                // ignore
             }
             itemView.setOnClickListener { onClick(item) }
             itemView.setOnLongClickListener { onLong(itemView, item); true }

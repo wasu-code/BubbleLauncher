@@ -7,7 +7,6 @@ import android.service.quicksettings.TileService
 import android.content.Intent
 import android.os.Build
 import androidx.annotation.RequiresPermission
-import com.github.wasu_code.bubblelauncher.util.BubbleHelper
 
 class QuickTileService : TileService() {
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)

@@ -31,12 +31,14 @@ class BubbleChooserActivity : AppCompatActivity() {
 
         val topAppBar = findViewById<MaterialToolbar>(R.id.topAppBar)
         topAppBar.inflateMenu(R.menu.top_app_bar_menu)
+
         topAppBar.setOnClickListener {
             // trigger rescan
             val wr =
                 androidx.work.OneTimeWorkRequestBuilder<AppScanWorker>().build()
             androidx.work.WorkManager.getInstance(this).enqueue(wr)
         }
+
         topAppBar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.action_add_bubble -> {
@@ -46,6 +48,22 @@ class BubbleChooserActivity : AppCompatActivity() {
                 else -> false
             }
         }
+
+        val searchItem = topAppBar.menu.findItem(R.id.action_search)
+        val searchView = searchItem.actionView as androidx.appcompat.widget.SearchView
+
+        searchView.queryHint = "Search apps..."
+        searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                adapter.filter(query.orEmpty())
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                adapter.filter(newText.orEmpty())
+                return true
+            }
+        })
 
         lifecycleScope.launch {
             AppDatabase.get(applicationContext)
