@@ -19,6 +19,7 @@ import androidx.annotation.RequiresPermission
 import com.github.wasu_code.bubblelauncher.data.AppEntity
 import java.util.UUID
 import androidx.core.graphics.createBitmap
+import com.github.wasu_code.bubblelauncher.BubbleChooserActivity
 import com.github.wasu_code.bubblelauncher.R
 
 const val CHANNEL_ID = "bubble_channel"
@@ -48,6 +49,14 @@ object BubbleHelper {
         }
         bubbleActivityIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
 
+        // If no app specified launch bubble chooser
+        val app = app ?: AppEntity(
+            id = "",
+            label = "Bubble Launcher",
+            packageName = context.packageName,
+            activityName = BubbleChooserActivity::class.java.name,
+        )
+
         // Unique PendingIntent
         val pending = PendingIntent.getActivity(
             context,
@@ -58,22 +67,18 @@ object BubbleHelper {
 
         // target app icon
         val pm = context.packageManager
-        val appIcon: Icon = if (app != null) {
-            try {
-                val drawable = pm.getApplicationIcon(app.packageName)
-                Icon.createWithBitmap(drawableToBitmap(drawable))
-            } catch (e: Exception) {
-                Icon.createWithResource(context, R.drawable.ic_launcher_foreground)
-            }
-        } else {
-            Icon.createWithResource(context, R.drawable.ic_launcher_foreground)
+        val appIcon: Icon = try {
+            val drawable = pm.getApplicationIcon(app.packageName)
+            Icon.createWithBitmap(drawableToBitmap(drawable))
+        } catch (_: Exception) {
+            Icon.createWithResource(context, R.mipmap.ic_launcher)
         }
 
         // Shortcut management
         val sm = context.getSystemService(ShortcutManager::class.java)
         val shortcutId = "bubble_${UUID.randomUUID()}"
         val shortcut = ShortcutInfo.Builder(context, shortcutId)
-            .setShortLabel(app?.label ?: "Bubble")
+            .setShortLabel(app.label)
             .setLongLived(true)
             .setIcon(appIcon)
             .setIntent(Intent(Intent.ACTION_DEFAULT))
@@ -94,7 +99,7 @@ object BubbleHelper {
         // Bubble metadata
         val bubbleMetadata = Notification.BubbleMetadata.Builder(
             pending,
-            Icon.createWithResource(context, com.github.wasu_code.bubblelauncher.R.drawable.ic_launcher_foreground)
+            Icon.createWithResource(context, R.mipmap.ic_launcher)
         )
             .setDesiredHeight(800)
             .setAutoExpandBubble(true)
@@ -113,7 +118,7 @@ object BubbleHelper {
 
         // Build notification
         val notif = Notification.Builder(context, CHANNEL_ID)
-            .setContentTitle(app?.label ?: "Bubble Chooser")
+            .setContentTitle(app.label)
             .setSmallIcon(appIcon)
             .setBubbleMetadata(bubbleMetadata)
             .setShortcutId(shortcutId)
