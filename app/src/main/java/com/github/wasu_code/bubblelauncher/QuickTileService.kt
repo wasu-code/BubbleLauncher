@@ -15,6 +15,6 @@ class QuickTileService : TileService() {
         BubbleHelper.createBubbleChannel(this)
         val intent = Intent(this, BubbleChooserActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        BubbleHelper.postBubble(this, intent, "Bubble Chooser")
+        BubbleHelper.postBubble(this, intent, null)
     }
 }

@@ -10,17 +10,38 @@ import android.content.Intent
 import android.app.Person
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.graphics.drawable.Icon
 import androidx.annotation.RequiresPermission
+import com.github.wasu_code.bubblelauncher.data.AppEntity
 import java.util.UUID
+import androidx.core.graphics.createBitmap
+import com.github.wasu_code.bubblelauncher.R
 
 const val CHANNEL_ID = "bubble_channel"
 const val MAX_DYNAMIC_SHORTCUTS = 5
 
 object BubbleHelper {
 
+    fun drawableToBitmap(drawable: Drawable): Bitmap {
+        if (drawable is BitmapDrawable) {
+            drawable.bitmap?.let { return it }
+        }
+
+        val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else 1
+        val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else 1
+
+        val bitmap = createBitmap(width, height)
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+        return bitmap
+    }
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
-    fun postBubble(context: Context, bubbleActivityIntent: Intent, title: String) {
+    fun postBubble(context: Context, bubbleActivityIntent: Intent, app: AppEntity?) {
         // Ensure bubble intent has an action
         if (bubbleActivityIntent.action == null) {
             bubbleActivityIntent.action = "com.github.wasu_code.bubblelauncher.OPEN_BUBBLE_${UUID.randomUUID()}"
@@ -35,12 +56,26 @@ object BubbleHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        // target app icon
+        val pm = context.packageManager
+        val appIcon: Icon = if (app != null) {
+            try {
+                val drawable = pm.getApplicationIcon(app.packageName)
+                Icon.createWithBitmap(drawableToBitmap(drawable))
+            } catch (e: Exception) {
+                Icon.createWithResource(context, R.drawable.ic_launcher_foreground)
+            }
+        } else {
+            Icon.createWithResource(context, R.drawable.ic_launcher_foreground)
+        }
+
         // Shortcut management
         val sm = context.getSystemService(ShortcutManager::class.java)
         val shortcutId = "bubble_${UUID.randomUUID()}"
         val shortcut = ShortcutInfo.Builder(context, shortcutId)
-            .setShortLabel("Bubble")
+            .setShortLabel(app?.label ?: "Bubble")
             .setLongLived(true)
+            .setIcon(appIcon)
             .setIntent(Intent(Intent.ACTION_DEFAULT))
             .build()
 
@@ -78,13 +113,13 @@ object BubbleHelper {
 
         // Build notification
         val notif = Notification.Builder(context, CHANNEL_ID)
-            .setContentTitle(title)
-            .setSmallIcon(com.github.wasu_code.bubblelauncher.R.drawable.ic_launcher_foreground)
+            .setContentTitle(app?.label ?: "Bubble Chooser")
+            .setSmallIcon(appIcon)
             .setBubbleMetadata(bubbleMetadata)
             .setShortcutId(shortcutId)
             .setStyle(messagingStyle)
-            .setOngoing(false)       // not ongoing so user can swipe
-            .setAutoCancel(true)     // auto remove when user dismisses
+            .setOngoing(false)
+            .setAutoCancel(true)
             .build()
 
         val nm = context.getSystemService(NotificationManager::class.java)

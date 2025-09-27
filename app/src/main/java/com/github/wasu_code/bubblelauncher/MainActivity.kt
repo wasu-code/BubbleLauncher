@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(this, BubbleChooserActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
-        BubbleHelper.postBubble(this, intent, "Bubble Chooser")
+        BubbleHelper.postBubble(this, intent, null)
         finish()
     }
 

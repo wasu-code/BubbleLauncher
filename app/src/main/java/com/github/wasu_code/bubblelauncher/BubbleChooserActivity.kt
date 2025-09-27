@@ -60,7 +60,7 @@ class BubbleChooserActivity : AppCompatActivity() {
     private fun openNewBubble() {
         val intent = Intent(this, BubbleChooserActivity::class.java)
         @SuppressLint("MissingPermission")
-        BubbleHelper.postBubble(this, intent, "New Bubble")
+        BubbleHelper.postBubble(this, intent, null)
     }
 
     private fun onAppClicked(app: AppEntity) {
@@ -72,7 +72,10 @@ class BubbleChooserActivity : AppCompatActivity() {
             putExtras(original)
             setClassName(app.packageName, app.activityName)
         }
-        startActivity(target)
+//        startActivity(target)
+        @SuppressLint("MissingPermission")
+        BubbleHelper.postBubble(this, target, app)
+        finish()
     }
     private fun onAppLongPressed(view: View, app: AppEntity) {
         //TODO see https://github.com/farmerbb/Taskbar

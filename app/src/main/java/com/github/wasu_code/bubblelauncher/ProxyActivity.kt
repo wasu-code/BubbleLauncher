@@ -21,7 +21,7 @@ class ProxyActivity : AppCompatActivity() {
             putExtras(intent ?: Intent())
         }
         com.github.wasu_code.bubblelauncher.util.BubbleHelper.postBubble(this,
-            bubbleIntent, "Intent Proxy")
+            bubbleIntent, null)
 // Immediately finish: bubble will be used for UI
         finish()
     }
