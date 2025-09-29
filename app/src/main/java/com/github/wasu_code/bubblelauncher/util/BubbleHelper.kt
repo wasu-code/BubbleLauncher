@@ -12,35 +12,27 @@ import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.PixelFormat
+import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.Icon
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import com.github.wasu_code.bubblelauncher.data.AppEntity
 import java.util.UUID
 import androidx.core.graphics.createBitmap
+import androidx.core.graphics.drawable.toBitmap
 import com.github.wasu_code.bubblelauncher.BubbleChooserActivity
 import com.github.wasu_code.bubblelauncher.R
+import androidx.core.graphics.get
 
 const val CHANNEL_ID = "bubble_channel"
 const val MAX_DYNAMIC_SHORTCUTS = 5
 
 object BubbleHelper {
-
-    fun drawableToBitmap(drawable: Drawable): Bitmap {
-        if (drawable is BitmapDrawable) {
-            drawable.bitmap?.let { return it }
-        }
-
-        val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else 1
-        val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else 1
-
-        val bitmap = createBitmap(width, height)
-        val canvas = Canvas(bitmap)
-        drawable.setBounds(0, 0, canvas.width, canvas.height)
-        drawable.draw(canvas)
-        return bitmap
-    }
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun postBubble(context: Context, bubbleActivityIntent: Intent, app: AppEntity?) {
         // Ensure bubble intent has an action
@@ -69,7 +61,21 @@ object BubbleHelper {
         val pm = context.packageManager
         val appIcon: Icon = try {
             val drawable = pm.getApplicationIcon(app.packageName)
-            Icon.createWithBitmap(drawableToBitmap(drawable))
+
+            val bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
+            val canvas = Canvas(bitmap)
+
+            // Quick transparency check using top-left pixel
+            drawable.setBounds(0, 0, 2, 2)
+            drawable.draw(canvas)
+            val hasTransparency = Color.alpha(bitmap[0, 0]) < 255
+            val padding = if (hasTransparency) 24 else 0
+
+            canvas.drawColor(Color.WHITE)
+            drawable.setBounds(padding, padding, canvas.width - padding, canvas.height - padding)
+            drawable.draw(canvas)
+
+            Icon.createWithAdaptiveBitmap(bitmap)
         } catch (_: Exception) {
             Icon.createWithResource(context, R.mipmap.ic_launcher)
         }
