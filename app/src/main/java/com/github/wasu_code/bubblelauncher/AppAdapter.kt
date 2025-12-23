@@ -1,6 +1,5 @@
 package com.github.wasu_code.bubblelauncher
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
