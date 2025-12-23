@@ -44,7 +44,7 @@ object BubbleHelper {
         // Unique PendingIntent
         val pending = PendingIntent.getActivity(
             context,
-            UUID.randomUUID().hashCode(),
+            app.packageName.hashCode(),
             bubbleActivityIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -74,7 +74,7 @@ object BubbleHelper {
 
         // Shortcut management
         val sm = context.getSystemService(ShortcutManager::class.java)
-        val shortcutId = "bubble_${UUID.randomUUID()}"
+        val shortcutId = "bubble_${app.packageName}"
         val shortcut = ShortcutInfo.Builder(context, shortcutId)
             .setShortLabel(app.label)
             .setLongLived(true)
@@ -112,7 +112,7 @@ object BubbleHelper {
             .setGroupConversation(false)
 
         // Unique notification ID
-        val notifId = (System.currentTimeMillis() % Int.MAX_VALUE).toInt()
+        val notifId = app.packageName.hashCode()
 
         // Build notification
         val notif = Notification.Builder(context, CHANNEL_ID)
