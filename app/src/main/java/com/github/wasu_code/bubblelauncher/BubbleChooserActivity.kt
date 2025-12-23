@@ -89,11 +89,13 @@ class BubbleChooserActivity : AppCompatActivity() {
             putExtras(original)
             setClassName(app.packageName, app.activityName)
         }
+        //TODO: let user choose behaviour after clicking app: launch in new bubble, launch in host bubble, launch in new bubble and close host (after delay)
 //        startActivity(target)
         @SuppressLint("MissingPermission")
         BubbleHelper.postBubble(this, target, app)
-        finish()
+//        finish()
     }
+
     private fun onAppLongPressed(view: View, app: AppEntity) {
         //TODO see https://github.com/farmerbb/Taskbar
 //        val popup = android.widget.PopupMenu(this, view)
